@@ -1,0 +1,28 @@
+{
+  "name": "rewindable-reducer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "build": "tsc src/index.ts --outDir lib"
+  },
+  "author": "Nick Graham",
+  "license": "ISC",
+  "devDependencies": {
+    "react-test-renderer": "^16.13.1",
+    "@testing-library/react-hooks": "^3.2.1",
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.5.0",
+    "@testing-library/user-event": "^7.2.1",
+    "@types/jest": "^25.2.1",
+    "@types/node": "^13.13.0",
+    "@types/react": "^16.9.34",
+    "@types/react-dom": "^16.9.6"
+  },
+  "dependencies": {
+    "jest": "^25.5.0",
+    "react": "^16.13.1",
+    "typescript": "^3.8.3"
+  }
+}
