@@ -1,8 +1,8 @@
 {
-  "name": "rewindable-reducer",
+  "name": "use-rewindable-reducer",
   "version": "0.0.1",
   "repository": "github:nbgraham/react-hook-use-rewindable-reducer",
-  "description": "",
+  "description": "A React hook like useReducer that can undo and redo",
   "main": "index.js",
   "scripts": {
     "test": "jest",
