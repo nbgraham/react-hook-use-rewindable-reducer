@@ -1,6 +1,7 @@
 {
   "name": "rewindable-reducer",
-  "version": "1.0.0",
+  "version": "0.0.1",
+  "repository": "github:nbgraham/react-hook-use-rewindable-reducer",
   "description": "",
   "main": "index.js",
   "scripts": {
