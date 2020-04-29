@@ -1,6 +1,10 @@
 import { useCallback, useMemo } from 'react'
 import { useResumableReducer } from './use_resumable_reducer';
 
+export class RewindableReducerError extends Error {
+    name = 'RewindableReducerError'
+}
+
 const rewindableActionCreator = (name: string) => {
     const type = `@@${name}@@`;
     const action = { type };
@@ -25,7 +29,12 @@ type RewindableReducerState<S, A> = {
 }
 type RewindableReducerAction<A> = A | typeof UNDO.action | typeof RESET.action;
 
-export type SaveOptions<S, A> = {
+export type Options<S = null, A = null> = {
+    historyLimit: number
+    persist: Partial<PersistOptions<S, A>>
+}
+
+export type PersistOptions<S, A> = {
     saveKey: string;
     serializeState: (state: S) => string;
     deserializeState: (ser: string) => S;
@@ -35,8 +44,7 @@ export type SaveOptions<S, A> = {
     retrieveValue: (key: string) => string | null;
 }
 
-export const useRewindableReducer = <S, A>(reducer: (state: S, action: A) => S, initialState: S, saveOptions?: Partial<SaveOptions<S, A>>) => {
-
+export const useRewindableReducer = <S, A>(reducer: (state: S, action: A) => S, initialState: S, options?: Partial<Options<S, A>>) => {
     const initialRewindableState: RewindableReducerState<S, A> = useMemo(() => ({
         pastActions: [],
         pastStates: [],
@@ -49,10 +57,11 @@ export const useRewindableReducer = <S, A>(reducer: (state: S, action: A) => S, 
         (state: RewindableReducerState<S, A>, action: RewindableReducerAction<A>): RewindableReducerState<S, A> => {
             if (UNDO.isActionType(action)) {
                 if (state.pastStates.length === 0) {
+                    console.warn('Reached end of history. Returning previous state.')
                     return state;
                 }
-                const prevState = state.pastStates[state.pastStates.length - 1];
-                const prevAction = state.pastActions[state.pastActions.length - 1];
+                const prevState = state.pastStates.slice(-1)[0];
+                const prevAction = state.pastActions.slice(-1)[0];
                 return {
                     pastActions: state.pastActions.slice(0, -1),
                     pastStates: state.pastStates.slice(0, -1),
@@ -62,6 +71,7 @@ export const useRewindableReducer = <S, A>(reducer: (state: S, action: A) => S, 
                 };
             } else if (REDO.isActionType(action)) {
                 if (state.futureStates.length === 0) {
+                    console.warn('No future states to redo. Returning previous state.')
                     return state;
                 }
                 const nextState = state.futureStates[0];
@@ -77,9 +87,15 @@ export const useRewindableReducer = <S, A>(reducer: (state: S, action: A) => S, 
                 return initialRewindableState;
             } else {
                 const nextState = reducer(state.currentState, action);
+
+                const nextHistorySize = state.pastStates.length + 1 + state.futureStates.length;
+                const firstIndexToKeep = options?.historyLimit && options?.historyLimit < nextHistorySize
+                    ? nextHistorySize - options?.historyLimit
+                    : 0;
+
                 return {
-                    pastActions: [...state.pastActions, action],
-                    pastStates: [...state.pastStates, state.currentState],
+                    pastActions: [...state.pastActions.slice(firstIndexToKeep), action],
+                    pastStates: [...state.pastStates.slice(firstIndexToKeep), state.currentState],
                     currentState: nextState,
                     futureActions: [],
                     futureStates: [],
@@ -90,8 +106,8 @@ export const useRewindableReducer = <S, A>(reducer: (state: S, action: A) => S, 
     )
 
     const { saveState, retrieveState } = useMemo(
-        () => getSaveAndRetrieveFunctions(saveOptions),
-        [saveOptions]
+        () => getSaveAndRetrieveFunctions(options?.persist),
+        [options?.persist]
     )
 
     const [state, dispatch] = useResumableReducer(
@@ -107,16 +123,16 @@ export const useRewindableReducer = <S, A>(reducer: (state: S, action: A) => S, 
     const externalDispatch = useCallback((action: A) => dispatch(action), [dispatch]);
 
     return {
+        ...state,
         state: state.currentState,
         dispatch: externalDispatch,
-        pastActions: state.pastActions,
         undo,
         redo,
         reset
     }
 }
 
-const getSaveAndRetrieveFunctions = <S, A>(saveOptions?: Partial<SaveOptions<S, A>>) => {
+const getSaveAndRetrieveFunctions = <S, A>(saveOptions?: Partial<PersistOptions<S, A>>) => {
     const _saveOptions = saveOptions && {
         saveKey: getNextSaveId(),
         serializeState: JSON.stringify,
@@ -126,7 +142,7 @@ const getSaveAndRetrieveFunctions = <S, A>(saveOptions?: Partial<SaveOptions<S, 
         saveValue: defaultSaveItem,
         retrieveValue: defaultRetrieveItem,
         ...saveOptions,
-    } as SaveOptions<S, A>
+    } as PersistOptions<S, A>
 
     const saveKey = _saveOptions?.saveKey;
     const save = _saveOptions?.saveValue;

@@ -23,6 +23,43 @@ test('can undo after one', () => {
     expect(result.current.pastActions).toEqual([]);
 })
 
+test('history limits past actions', () => {
+    const { result } = renderHook(() => useRewindableReducer(countReducer, 0, { historyLimit: 5 }));
+
+    expect(result.current.state).toBe(0);
+    expect(result.current.pastActions).toEqual([]);
+    act(() => {
+        for (let i = 0; i < 10; i++) {
+            result.current.dispatch('increment')
+        }
+    })
+
+    expect(result.current.state).toBe(10);
+    expect(result.current.pastActions).toHaveLength(5);
+    expect(result.current.pastStates).toHaveLength(5);
+})
+
+test('history limits future actions', () => {
+    const { result } = renderHook(() => useRewindableReducer(countReducer, 0, { historyLimit: 5 }));
+
+    expect(result.current.state).toBe(0);
+    expect(result.current.pastActions).toEqual([]);
+    act(() => {
+        for (let i = 0; i < 10; i++) {
+            result.current.dispatch('increment')
+        }
+    })
+
+    act(() => {
+        for (let i = 0; i < 8; i++) {
+            result.current.undo();
+        }
+    })
+
+    expect(result.current.state).toBe(5);
+    expect(result.current.futureActions).toHaveLength(5);
+    expect(result.current.futureStates).toHaveLength(5);
+})
 
 test('can undo after three then reset', () => {
     const { result } = renderHook(() => useRewindableReducer(countReducer, 0));
@@ -140,7 +177,7 @@ test('resume', () => {
     const saveValue = (key: string, value: string) => savedValues[key] = value
     const retrieveValue = (key: string) => savedValues[key]
 
-    const { result } = renderHook(() => useRewindableReducer(countReducer, 0, { saveKey: 'test', saveValue, retrieveValue }));
+    const { result } = renderHook(() => useRewindableReducer(countReducer, 0, { persist: { saveKey: 'test', saveValue, retrieveValue } }));
 
     expect(result.current.state).toBe(0);
     expect(result.current.pastActions).toEqual([]);
@@ -150,7 +187,7 @@ test('resume', () => {
     expect(result.current.state).toBe(1);
     expect(result.current.pastActions).toEqual(['increment']);
 
-    const { result: result1 } = renderHook(() => useRewindableReducer(countReducer, 0, { saveKey: 'test', saveValue, retrieveValue }));
+    const { result: result1 } = renderHook(() => useRewindableReducer(countReducer, 0, { persist: { saveKey: 'test', saveValue, retrieveValue } }));
     expect(result1.current.state).toBe(1);
     expect(result1.current.pastActions).toEqual(['increment']);
 })
