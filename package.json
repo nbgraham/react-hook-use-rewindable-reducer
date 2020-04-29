@@ -3,10 +3,14 @@
   "version": "0.0.1",
   "repository": "github:nbgraham/react-hook-use-rewindable-reducer",
   "description": "A React hook like useReducer that can undo and redo",
-  "main": "index.js",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib/**/*"
+  ],
   "scripts": {
     "test": "jest",
-    "build": "tsc src/index.ts --outDir lib"
+    "build": "tsc"
   },
   "author": "Nick Graham",
   "license": "ISC",
