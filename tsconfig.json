@@ -12,7 +12,8 @@
       "skipLibCheck": true,
       "paths": {
         "lib/*": ["lib/*"],
-      }
+      },
+      "jsx": "react"
     },
     "include": ["src"],
     "exclude": ["node_modules", "**/*.test.*"]

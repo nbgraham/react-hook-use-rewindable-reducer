@@ -15,17 +15,21 @@
   "author": "Nick Graham",
   "license": "ISC",
   "devDependencies": {
-    "react-test-renderer": "^16.13.1",
-    "@testing-library/react-hooks": "^3.2.1",
+    "@babel/preset-env": "^7.9.6",
+    "@babel/preset-react": "^7.9.4",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
+    "@testing-library/react-hooks": "^3.2.1",
     "@testing-library/user-event": "^7.2.1",
     "@types/jest": "^25.2.1",
     "@types/node": "^13.13.0",
     "@types/react": "^16.9.34",
     "@types/react-dom": "^16.9.6",
-    "ts-jest": "^25.4.0",
-    "jest": "^25.5.0"
+    "babel-jest": "^25.5.1",
+    "jest": "^25.5.0",
+    "react-dom": "^16.13.1",
+    "react-test-renderer": "^16.13.1",
+    "ts-jest": "^25.4.0"
   },
   "dependencies": {
     "react": "^16.13.1",

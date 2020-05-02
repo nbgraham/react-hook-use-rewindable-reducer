@@ -3,16 +3,17 @@
 ## Quickstart
 `npm i use-rewindable-reducer`
 
-```js
-import useRewindableReducer from 'use-rewindable-reducer';
+```tsx
+import * as React from 'react';
+import { useRewindableReducer } from './use_rewindable_reducer';
 
-const countReducer = (count, action) =>
+const countReducer = (count: number, action: 'increment' | 'decrement') =>
     action === 'increment' ? count + 1 :
         action === 'decrement' ? count - 1 :
             count
 
 const RewindableReducerExample = () => {
-    const { state, dispatch, undo} = useRewindableReducer(countReducer, 0);
+    const { state, dispatch, undo, redo, pastStates } = useRewindableReducer(countReducer, 0);
 
     return (
         <div>
@@ -20,6 +21,11 @@ const RewindableReducerExample = () => {
             <button onClick={() => dispatch('increment')}>Increment</button>
             <button onClick={() => dispatch('decrement')}>Decrement</button>
             <button onClick={undo}>Undo</button>
+            <button onClick={redo}>Redo</button>
+            <div>
+                Past States
+                {pastStates.map((s, i) => <div key={i}>{s}</div>)}
+            </div>
         </div>
     )
 }
